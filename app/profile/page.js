@@ -37,7 +37,7 @@ const [linkedin, setLinkedin] = useState("");
   }
 
   try {
-
+    console.log(user.uid);
     await updateDoc(doc(db, "users", user.uid), {
   uid: user.uid,
   email: user.email,

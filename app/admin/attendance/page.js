@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+
 import {
   collection,
   getDocs,
@@ -19,10 +19,7 @@ const [search, setSearch] = useState("");
 const [statusFilter, setStatusFilter] = useState("");
 
 const [loading, setLoading] = useState(true);
-const searchParams = useSearchParams();
 
-const employeeId =
-  searchParams.get("employee");
 
 useEffect(() => {
 
@@ -72,12 +69,7 @@ const deleteAttendance = async (id) => {
   loadAttendance();
 
 };
-
 const filteredAttendance = attendance.filter((item) => {
-
-  const matchEmployee =
-    !employeeId ||
-    item.employeeId === employeeId;
 
   const matchSearch =
     item.employeeName
@@ -89,7 +81,6 @@ const filteredAttendance = attendance.filter((item) => {
     item.status === statusFilter;
 
   return (
-    matchEmployee &&
     matchSearch &&
     matchStatus
   );

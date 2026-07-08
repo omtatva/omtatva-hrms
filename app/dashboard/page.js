@@ -1,22 +1,38 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs ,getDoc,doc} from "firebase/firestore";
 import { auth, db } from "../../lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 
 export default function DashboardPage() {
 const [myTimesheets, setMyTimesheets] = useState([]);
 const [myAttendance, setMyAttendance] = useState([]);
-
+const [userName, setUserName] = useState("");
+const [userData, setUserData] = useState(null);
 useEffect(() => {
-  const unsubscribe = onAuthStateChanged(auth, (user) => {
+  const unsubscribe = onAuthStateChanged(auth, async (user) => {
     if (!user) {
       window.location.href = "/login";
       return;
     }
 
-    loadMyData(user);
+    // Load user profile
+    const userRef = doc(db, "users", user.uid);
+    const snap = await getDoc(userRef);
+
+    if (snap.exists()) {
+      const data = snap.data();
+
+      setUserData(data);
+
+      setUserName(
+        `${data.firstName ?? ""} ${data.lastName ?? ""}`.trim()
+      );
+    }
+
+    // Load dashboard data
+    await loadMyData(user);
   });
 
   return () => unsubscribe();
@@ -99,7 +115,7 @@ alignItems: "center",
 >
 <div>
 <h1 style={{ margin: 0 }}>
-Welcome Back 👋
+Welcome Back, {userName || "Employee"} 👋
 </h1>
 
       <p
@@ -264,10 +280,10 @@ Welcome Back 👋
     }}
   >
     <h2>🤖 AI Workspace</h2>
-
+    
     <button
       onClick={() =>
-        (window.location.href = "/workspace")
+        (window.location.href = "/workspace/Frameo")
       }
       style={{
         marginTop: "20px",
@@ -281,7 +297,26 @@ Welcome Back 👋
         fontSize: "16px",
       }}
     >
-      🚀 Open AI Workspace
+      🚀 Frameo Workspace
+    </button>
+
+      <button
+      onClick={() =>
+        (window.location.href = "/workspace/higgsfield")
+      }
+      style={{
+        marginTop: "20px",
+        background: "#2563eb",
+        color: "#fff",
+        border: "none",
+        padding: "15px 25px",
+        borderRadius: "10px",
+        cursor: "pointer",
+        fontWeight: "600",
+        fontSize: "16px",
+      }}
+    >
+      🚀 Higgsfield Workspace
     </button>
 
     <p

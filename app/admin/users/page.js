@@ -257,8 +257,10 @@ padding: "20px",
         {users.map((user) => (
             <tr key={user.id}>
             <td style={td}>
-              {user.name || "-"}
-            </td>
+  {user.firstName || user.lastName
+    ? `${user.firstName || ""} ${user.lastName || ""}`.trim()
+    : "-"}
+</td>
             <td style={td}>
   {editingId === user.id ? (
     <>
@@ -351,69 +353,12 @@ padding: "20px",
             >
 
                 <button
-                style={blackBtn}
-                onClick={() =>
+                  style={blackBtn}
+                  onClick={() =>
                     window.location.href = `/admin/users/${user.id}`
-                }
-                >
-                👁 View
-                </button>
-
-                <button
-                style={blueBtn}
-                onClick={() =>
-                    updateRole(user.id, "admin")
-                }
-                >
-                Admin
-                </button>
-
-                <button
-                  style={greenBtn}
-                  onClick={() =>
-                    updateRole(
-                      user.id,
-                      "employee"
-                    )
                   }
                 >
-                  Employee
-                </button>
-
-                <button
-                  style={orangeBtn}
-                  onClick={() =>
-                    updateRole(
-                      user.id,
-                      "head"
-                    )
-                  }
-                >
-                  Head
-                </button>
-
-                <button
-                  style={redBtn}
-                  onClick={() =>
-                    updateStatus(
-                      user.id,
-                      "inactive"
-                    )
-                  }
-                >
-                  Deactivate
-                </button>
-
-                <button
-                  style={greenBtn}
-                  onClick={() =>
-                    updateStatus(
-                      user.id,
-                      "active"
-                    )
-                  }
-                >
-                  Activate
+                  👁 View
                 </button>
 
               </div>

@@ -83,7 +83,7 @@ const loadPayslips = async (user) => {
   console.log(list);
 
   setPayslips(list);
-
+ 
   setLoading(false);
 };
 

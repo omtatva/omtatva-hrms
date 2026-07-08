@@ -13,10 +13,7 @@ import { db } from "../../../lib/firebase";
 export default function LeaveAdminPage() {
 
 const [requests,setRequests]=useState([]);
-const searchParams = useSearchParams();
 
-const employeeId =
-  searchParams.get("employee");
 useEffect(()=>{
 loadRequests();
 },[]);
@@ -114,15 +111,7 @@ boxShadow:"0 10px 30px rgba(0,0,0,.08)"
 
 <tbody>
 
-{requests
-.filter((item) => {
-
-  if (!employeeId) return true;
-
-  return item.employeeId === employeeId;
-
-})
-.map((item)=>(
+{requests.map((item) => (
 
 <tr key={item.id}>
 

@@ -1,4 +1,5 @@
 "use client";
+import LetterOfIntent from "../components/LetterOfIntent";
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
@@ -15,7 +16,12 @@ const { id } = useParams();
 
 const [user,setUser] = useState(null);
 const [editMode, setEditMode] = useState(false);
+const [showLOI, setShowLOI] = useState(false);
+const [showPreview, setShowPreview] = useState(false);
+const [joiningDate, setJoiningDate] = useState("");
+const [designation, setDesignation] = useState("");
 
+const currentDate = new Date().toLocaleDateString("en-IN");
 useEffect(() => {
 loadUser();
 }, []);
@@ -48,8 +54,33 @@ if(!user){
 return <h2 style={{padding:40}}>Loading...</h2>
 
 }
+const generatePDF = async () => {
+  const html2pdf = (await import("html2pdf.js")).default;
 
-return(
+  const element = document.getElementById("loi-document");
+
+  html2pdf()
+    .set({
+      margin: 0.5,
+      filename: `LOI_${user.firstName}_${user.lastName}.pdf`,
+      image: {
+        type: "jpeg",
+        quality: 1,
+      },
+      html2canvas: {
+        scale: 2,
+      },
+      jsPDF: {
+        unit: "in",
+        format: "a4",
+        orientation: "portrait",
+      },
+    })
+    .from(element)
+    .save();
+};
+
+return (
 
 <div
 style={{
@@ -251,6 +282,17 @@ window.location.href = `/admin/timesheets?employee=${id}`
 }
 >
 Timesheets
+</button>
+
+<button
+  style={greenBtn}
+  onClick={() => {
+    setDesignation(user.designation || "");
+    setJoiningDate(user.joiningDate || "");
+    setShowLOI(true);
+  }}
+>
+  📄 Generate LOI
 </button>
 
 <button
@@ -943,7 +985,152 @@ marginTop:"20px"
 </p>
 
 </div>
+{showLOI && (
+  <div
+    style={{
+      position: "fixed",
+      inset: 0,
+      background: "rgba(0,0,0,.6)",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      zIndex: 9999,
+    }}
+  >
+    <div
+      style={{
+        width: "500px",
+        background: "#fff",
+        padding: "30px",
+        borderRadius: "12px",
+      }}
+    >
+      <h2>Generate Letter of Intent</h2>
 
+      <p>
+        <b>Employee</b>
+      </p>
+
+      <input
+        value={`${user.firstName} ${user.lastName}`}
+        disabled
+        style={inputStyle}
+      />
+
+      <p>Email</p>
+
+      <input
+        value={user.email}
+        disabled
+        style={inputStyle}
+      />
+
+      <p>Designation</p>
+
+      <input
+        value={designation}
+        onChange={(e) => setDesignation(e.target.value)}
+        style={inputStyle}
+      />
+
+      <p>Joining Date</p>
+
+      <input
+        type="date"
+        value={joiningDate}
+        onChange={(e) => setJoiningDate(e.target.value)}
+        style={inputStyle}
+      />
+
+      <div
+        style={{
+          display: "flex",
+          gap: "15px",
+          marginTop: "25px",
+        }}
+      >
+        <button
+  style={greenBtn}
+  onClick={() => {
+    setShowLOI(false);
+    setShowPreview(true);
+  }}
+>
+  Generate
+</button>
+
+        <button
+          style={redBtn}
+          onClick={() => setShowLOI(false)}
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+{showPreview && (
+  <div
+    style={{
+      position: "fixed",
+      inset: 0,
+      background: "rgba(0,0,0,.7)",
+      overflow: "auto",
+      zIndex: 9999,
+      padding: "40px",
+    }}
+  >
+    <div
+      style={{
+        maxWidth: "900px",
+        margin: "auto",
+        background: "#fff",
+        borderRadius: "10px",
+        overflow: "hidden",
+      }}
+    >
+      <div id="loi-document">
+        <LetterOfIntent
+          employeeName={`${user.firstName} ${user.lastName}`}
+          designation={designation}
+          joiningDate={joiningDate}
+          currentDate={currentDate}
+        />
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          gap: "20px",
+          padding: "20px",
+          borderTop: "1px solid #eee",
+        }}
+      >
+        <button
+          style={greenBtn}
+          onClick={generatePDF}
+        >
+          📄 Download PDF
+        </button>
+
+        {/* <button
+          style={greenBtn}
+          onClick={sendLOI}
+        >
+          📧 Send LOI
+        </button> */}
+
+        <button
+          style={redBtn}
+          onClick={() => setShowPreview(false)}
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 </div>
 
 );
@@ -973,4 +1160,51 @@ const purpleBtn = {
   padding: "12px 20px",
   borderRadius: "8px",
   cursor: "pointer",
+};
+
+const blueBtn = {
+  background: "#2563eb",
+  color: "#fff",
+  border: "none",
+  padding: "10px 18px",
+  borderRadius: "8px",
+  cursor: "pointer",
+};
+const greenBtn = {
+  background: "#16a34a",
+  color: "#fff",
+  border: "none",
+  padding: "10px 18px",
+  borderRadius: "8px",
+  cursor: "pointer",
+  fontWeight: "600",
+};
+const redBtn = {
+  background: "#dc2626",
+  color: "#fff",
+  border: "none",
+  padding: "10px 18px",
+  borderRadius: "8px",
+  cursor: "pointer",
+  fontWeight: "600",
+};
+
+const orangeBtn = {
+  background: "#f59e0b",
+  color: "#fff",
+  border: "none",
+  padding: "10px 18px",
+  borderRadius: "8px",
+  cursor: "pointer",
+  fontWeight: "600",
+};
+
+const grayBtn = {
+  background: "#64748b",
+  color: "#fff",
+  border: "none",
+  padding: "10px 18px",
+  borderRadius: "8px",
+  cursor: "pointer",
+  fontWeight: "600",
 };
