@@ -17,7 +17,7 @@ export default function RootLayout({
 
         <nav
           style={{
-            background: "#ffffff",
+            background: "#eaf3ff",
             borderBottom: "1px solid #e5e7eb",
             padding: "15px 40px",
             display: "flex",

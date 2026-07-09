@@ -12,7 +12,7 @@ export default function TimesheetPage() {
   const [hours, setHours] = useState("");
   const [status, setStatus] = useState("Completed");
   const [notes, setNotes] = useState("");
-
+  const [myTimesheets, setMyTimesheets] = useState([]);
   const saveTimesheet = async () => {
     const user = auth.currentUser;
 
@@ -194,6 +194,75 @@ export default function TimesheetPage() {
       >
         Save Timesheet
       </button>
+
+
+       {/* Timesheets */}
+  <div
+    style={{
+      background: "#fff",
+      padding: "25px",
+      borderRadius: "15px",
+      boxShadow:
+        "0 5px 20px rgba(0,0,0,0.08)",
+    }}
+  >
+    <h2>📋 Timesheet History</h2>
+
+    <table
+      style={{
+        width: "100%",
+        marginTop: "20px",
+        borderCollapse: "collapse",
+      }}
+    >
+      <thead>
+        <tr>
+          <th style={thStyle}>Client</th>
+          <th style={thStyle}>Episode</th>
+          <th style={thStyle}>Task</th>
+          <th style={thStyle}>AI Tool</th>
+          <th style={thStyle}>Hours</th>
+          <th style={thStyle}>Status</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {myTimesheets.map((item) => (
+          <tr key={item.id}>
+            <td style={tdStyle}>{item.client}</td>
+            <td style={tdStyle}>
+              {item.episodeName}
+            </td>
+            <td style={tdStyle}>{item.task}</td>
+            <td style={tdStyle}>{item.aiTool}</td>
+            <td style={tdStyle}>{item.hours}</td>
+
+            <td style={tdStyle}>
+              <span
+                style={{
+                  background:
+                    item.status ===
+                    "Completed"
+                      ? "#dcfce7"
+                      : "#fef3c7",
+                  color:
+                    item.status ===
+                    "Completed"
+                      ? "#15803d"
+                      : "#d97706",
+                  padding: "6px 12px",
+                  borderRadius: "20px",
+                  fontWeight: "600",
+                }}
+              >
+                {item.status}
+              </span>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
     </div>
   );
 }
@@ -207,3 +276,15 @@ const styles = {
     borderRadius: "6px",
   },
 };
+
+const thStyle = {
+borderBottom: "1px solid #ddd",
+padding: "12px",
+textAlign: "left",
+background: "#f8fafc",
+};
+
+const tdStyle = {
+borderBottom: "1px solid #eee",
+padding: "12px",
+}; 

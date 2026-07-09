@@ -49,19 +49,25 @@ const saveUser = async () => {
 
 };
 
-const updatePerformanceBand = async () => {
+const updatePerformance = async () => {
   try {
+
     await updateDoc(doc(db, "users", id), {
+
       performance: performanceBand,
-      performanceUpdatedAt: new Date(),
+
+      performanceUpdatedAt: new Date()
+
     });
 
-    alert("Performance Updated");
+    await loadUser();
 
-    loadUser();
+    alert("Performance Updated Successfully");
 
-  } catch (error) {
-    console.log(error);
+  } catch (err) {
+
+    console.log(err);
+
   }
 };
 
@@ -255,14 +261,10 @@ boxShadow:"0 10px 30px rgba(0,0,0,.08)"
       margin: "10px 0",
     }}
   >
-    {userData?.performance || "Pending"}
+    {user?.performance || "Pending"}
   </h1>
 
-  <p>
-    {userData?.performanceUpdatedAt
-      ? "Current Rating"
-      : "Awaiting HR Review"}
-  </p>
+  <p>Current Rating</p>
 </div>
 
 </div>

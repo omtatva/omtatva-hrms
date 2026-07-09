@@ -1,15 +1,38 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { collection, getDocs ,getDoc,doc} from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  doc,
+  getDoc,
+  query,
+  where,
+} from "firebase/firestore";
 import { auth, db } from "../../lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
+const COLORS = {
+  background: "#ffffff",
+  text: "#111111",
+  secondary: "#444444",
 
+  primary: "#3d6fa8",   // Main Brand Blue
+  accent: "#66a8e0",    // Accent Blue
+  soft: "#eaf3ff",      // Light Background
+
+  success: "#16a34a",
+  warning: "#ea580c",
+  danger: "#dc2626",
+
+  border: "#d9e8f8",
+  shadow: "rgba(61,111,168,0.15)",
+};
 export default function DashboardPage() {
 const [myTimesheets, setMyTimesheets] = useState([]);
 const [myAttendance, setMyAttendance] = useState([]);
 const [userName, setUserName] = useState("");
 const [userData, setUserData] = useState(null);
+
 useEffect(() => {
   const unsubscribe = onAuthStateChanged(auth, async (user) => {
     if (!user) {
@@ -43,31 +66,33 @@ if (snap.exists()) {
 
 const loadMyData = async (user) => {
   try {
-  const attendanceSnapshot = await getDocs(
-    collection(db, "attendance")
-  );
+  const attendanceQuery = query(
+  collection(db, "attendance"),
+  where("userId", "==", user.uid)
+);
 
-  const attendanceData = attendanceSnapshot.docs
-    .map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }))
-    .filter((item) => item.userId === user.uid);
+const attendanceSnapshot = await getDocs(attendanceQuery);
 
-  setMyAttendance(attendanceData);
+const attendanceData = attendanceSnapshot.docs.map((doc) => ({
+  id: doc.id,
+  ...doc.data(),
+}));
 
-  const timesheetSnapshot = await getDocs(
-    collection(db, "timesheets")
-  );
+setMyAttendance(attendanceData);
 
-  const timesheetData = timesheetSnapshot.docs
-    .map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }))
-    .filter((item) => item.email === user.email);
+const timesheetQuery = query(
+  collection(db, "timesheets"),
+  where("email", "==", user.email)
+);
 
-  setMyTimesheets(timesheetData);
+const timesheetSnapshot = await getDocs(timesheetQuery);
+
+const timesheetData = timesheetSnapshot.docs.map((doc) => ({
+  id: doc.id,
+  ...doc.data(),
+}));
+
+setMyTimesheets(timesheetData);
 } catch (error) {
   console.error(error);
 }
@@ -83,13 +108,23 @@ const avgHours =
 myAttendance.length > 0
 ? (totalHours / myAttendance.length).toFixed(1)
 : 0;
+const totalAttendance = myAttendance.length;
+
+const totalTimesheets = myTimesheets.length;
+
+const performance = userData?.performance || "Pending";
+
+const performanceUpdatedAt = userData?.performanceUpdatedAt;
+
 
 const cardStyle = {
-background: "#fff",
-padding: "25px",
-borderRadius: "15px",
-boxShadow: "0 5px 20px rgba(0,0,0,0.08)",
-textAlign: "center",
+  background: COLORS.background,
+  borderRadius: 20,
+  padding: "30px",
+  textAlign: "center",
+  border: `1px solid ${COLORS.soft}`,
+  boxShadow: "0 10px 30px rgba(0,0,0,.06)",
+  transition: ".3s",
 };
 
 return (
@@ -104,131 +139,364 @@ minHeight: "100vh",
 >
 {/* Header */}
 <div
-style={{
-background:
-"linear-gradient(135deg,#2563eb,#1e40af)",
-color: "#fff",
-padding: "30px",
-borderRadius: "20px",
-marginBottom: "30px",
-display: "flex",
-justifyContent: "space-between",
-alignItems: "center",
-}}
+  style={{
+    background: COLORS.primary,
+    color: "#fff",
+    borderRadius: 22,
+    padding: "35px",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 35,
+    boxShadow: "0 12px 30px rgba(61,111,168,.25)",
+  }}
 >
-<div>
-<h1 style={{ margin: 0 }}>
-Welcome Back, {userName || "Employee"} 👋
-</h1>
+  <div>
 
-      <p
-        style={{
-          marginTop: "10px",
-          opacity: 0.9,
-        }}
-      >
-        Track attendance, productivity and
-        timesheets.
-      </p>
-    </div>
-
-    <div
+    <h1
       style={{
-        background:
-          "rgba(255,255,255,0.15)",
-        padding: "15px 20px",
-        borderRadius: "12px",
+        margin: 0,
+        fontSize: 34,
+        fontWeight: 700,
       }}
     >
-      {new Date().toDateString()}
-    </div>
+      Welcome Back,
+      <br />
+      {userName}
+    </h1>
+
+    <p
+      style={{
+        marginTop: 10,
+        opacity: .9,
+        fontSize: 16,
+      }}
+    >
+      Track attendance, productivity and timesheets.
+    </p>
+
   </div>
 
-  {/* Stats Cards */}
   <div
     style={{
-      display: "grid",
-      gridTemplateColumns:
-        "repeat(auto-fit,minmax(250px,1fr))",
-      gap: "20px",
-      marginBottom: "30px",
+      background: COLORS.accent,
+      padding: "15px 25px",
+      borderRadius: 15,
+      fontWeight: 600,
+      color: "#fff",
     }}
   >
-    {/* Quick Actions */}
+    {new Date().toDateString()}
+  </div>
+</div>
+{/* ================= QUICK ACTIONS ================= */}
+
+<h2
+  style={{
+    marginBottom: "20px",
+    color: "#0f172a",
+    fontWeight: 700,
+  }}
+>
+  🚀 Quick Actions
+</h2>
 
 <div
   style={{
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
     gap: "20px",
-    marginBottom: "30px",
+    marginBottom: "35px",
   }}
 >
 
-  <div
-    style={actionCard}
-    onClick={() => (window.location.href = "/attendance")}
-  >
+  <div style={actionCard} onClick={() => window.location.href="/attendance"}>
     <h3>🕒 Attendance</h3>
     <p>View attendance history</p>
   </div>
 
-  <div
-    style={actionCard}
-    onClick={() => (window.location.href = "/timesheet")}
-  >
+  <div style={actionCard} onClick={() => window.location.href="/timesheet"}>
     <h3>📋 Timesheets</h3>
-    <p>Submit & view timesheets</p>
+    <p>Submit & View Timesheets</p>
   </div>
 
-  <div
-    style={actionCard}
-    onClick={() => (window.location.href = "/leave")}
-  >
+  <div style={actionCard} onClick={() => window.location.href="/leave"}>
     <h3>🏖 Leave</h3>
-    <p>Apply & track leave</p>
+    <p>Apply & Track Leave</p>
   </div>
 
-  <div
-    style={actionCard}
-    onClick={() => (window.location.href = "/documents")}
-  >
+  <div style={actionCard} onClick={() => window.location.href="/documents"}>
     <h3>📄 My Documents</h3>
     <p>Payslips & HR Documents</p>
   </div>
 
-  <div style={cardStyle}>
-  <h3>Performance</h3>
+</div>
 
-  <h1>
-    {userData?.performance || "Pending"}
-  </h1>
+{/* ================= DASHBOARD STATS ================= */}
 
-  <p>Current Rating</p>
+<h2
+  style={{
+    marginBottom: "20px",
+    color: "#0f172a",
+    fontWeight: 700,
+  }}
+>
+  📊 Dashboard Overview
+</h2>
+
+<div
+  style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(4,1fr)",
+    gap: "20px",
+    marginBottom: "35px",
+  }}
+>
+
+<div style={cardStyle}>
+
+<div
+style={{
+fontSize:42,
+marginBottom:15
+}}
+>
+📅
+</div>
+
+<h1
+style={{
+color:COLORS.primary,
+marginBottom:10
+}}
+>
+{totalAttendance}
+</h1>
+
+<h3
+style={{
+color:COLORS.text
+}}
+>
+Attendance
+</h3>
+
+<p
+style={{
+color:COLORS.secondary
+}}
+>
+Days Present
+</p>
+
+</div>
+
+<div style={cardStyle}>
+
+<div style={{fontSize:42}}>⏰</div>
+
+<h1 style={{color:COLORS.primary}}>
+{totalHours}
+</h1>
+
+<h3>Total Hours</h3>
+
+<p
+style={{
+color:COLORS.secondary
+}}
+>
+Working Hours
+</p>
+
+</div>
+
+<div style={cardStyle}>
+
+<div style={{fontSize:42}}>📝</div>
+
+<h1 style={{color:COLORS.primary}}>
+{totalTimesheets}
+</h1>
+
+<h3>Timesheets</h3>
+
+<p
+style={{
+color:COLORS.secondary
+}}
+>
+Submitted
+</p>
+
+</div>
+
+<div style={cardStyle}>
+
+<div style={{fontSize:42}}>📈</div>
+
+<h1 style={{color:COLORS.primary}}>
+{avgHours}
+</h1>
+
+<h3>Average Hours</h3>
+
+<p
+style={{
+color:COLORS.secondary
+}}
+>
+Per Attendance
+</p>
+
 </div>
 
 </div>
-    <div style={cardStyle}>
-      <h3>Total Attendance</h3>
-      <h1>{myAttendance.length}</h1>
-    </div>
 
-    <div style={cardStyle}>
-      <h3>Total Hours Worked</h3>
-      <h1>{totalHours}</h1>
-    </div>
+{/* ================= PERFORMANCE ================= */}
 
-    <div style={cardStyle}>
-      <h3>Timesheets Submitted</h3>
-      <h1>{myTimesheets.length}</h1>
-    </div>
+<div
+  style={{
+    display: "grid",
+    gridTemplateColumns: "350px 1fr",
+    gap: "25px",
+    marginBottom: "35px",
+  }}
+>
 
-    <div style={cardStyle}>
-      <h3>Average Hours</h3>
-      <h1>{avgHours}</h1>
-    </div>
-  </div>
+<div
+  style={{
+background:"#fff",
+padding:35,
+borderRadius:22,
+border:`1px solid ${COLORS.soft}`,
+boxShadow:"0 10px 30px rgba(0,0,0,.08)",
+textAlign:"center"
+}}
+>
 
+<div
+style={{
+width:85,
+height:85,
+margin:"auto",
+borderRadius:"50%",
+background:COLORS.primary,
+display:"flex",
+justifyContent:"center",
+alignItems:"center",
+fontSize:38,
+color:"#fff"
+}}
+>
+🏆
+</div>
+
+<h2
+style={{
+marginTop:20,
+color:COLORS.text
+}}
+>
+Performance
+</h2>
+
+<div
+style={{
+display:"inline-block",
+marginTop:20,
+padding:"12px 35px",
+background:COLORS.soft,
+color:COLORS.primary,
+borderRadius:40,
+fontSize:26,
+fontWeight:700
+}}
+>
+{userData?.performance || "Pending"}
+</div>
+
+<p
+style={{
+marginTop:18,
+color:COLORS.secondary
+}}
+>
+{userData?.performance
+? "Current Performance Rating"
+: "Awaiting HR Review"}
+</p>
+
+<hr
+style={{
+margin:"30px 0",
+borderColor:COLORS.soft
+}}
+/>
+
+<small
+style={{
+color:COLORS.secondary
+}}
+>
+Last Updated
+
+<br/>
+
+{
+userData?.performanceUpdatedAt
+?
+new Date(
+userData.performanceUpdatedAt.seconds*1000
+).toLocaleDateString()
+:
+"--"
+}
+
+</small>
+
+</div>
+
+<div
+style={{
+background:"#fff",
+borderRadius:"22px",
+padding:"30px",
+boxShadow:"0 12px 35px rgba(0,0,0,.08)"
+}}
+>
+
+<h2>📢 Announcements</h2>
+
+<div
+style={{
+marginTop:20,
+padding:"20px",
+background:"#f8fafc",
+borderRadius:15
+}}
+>
+No Announcements Yet
+</div>
+
+<h2 style={{marginTop:35}}>
+📅 Upcoming Holidays
+</h2>
+
+<div
+style={{
+marginTop:15,
+padding:"20px",
+background:"#f8fafc",
+borderRadius:15
+}}
+>
+No Upcoming Holidays
+</div>
+
+</div>
+
+</div>
 
 
 {/* Communication & AI Workspace */}
@@ -313,24 +581,25 @@ Welcome Back, {userName || "Employee"} 👋
       🚀 Frameo Workspace
     </button>
 
-      <button
-      onClick={() =>
-        (window.location.href = "/workspace/higgsfield")
-      }
+      <a
+      href="https://higgsfield.ai/"
+      target="_blank"
+      rel="noreferrer"
       style={{
+        display: "block",
         marginTop: "20px",
+        textDecoration: "none",
         background: "#2563eb",
         color: "#fff",
-        border: "none",
-        padding: "15px 25px",
-        borderRadius: "10px",
-        cursor: "pointer",
+        padding: "18px",
+        borderRadius: "12px",
+        textAlign: "center",
         fontWeight: "600",
         fontSize: "16px",
       }}
     >
-      🚀 Higgsfield Workspace
-    </button>
+      🚀 higgsfield Workspace
+    </a>
 
     <p
       style={{
@@ -346,127 +615,8 @@ Welcome Back, {userName || "Employee"} 👋
   </div>
 </div>
 
-  {/* Attendance History */}
-  <div
-    style={{
-      background: "#fff",
-      padding: "25px",
-      borderRadius: "15px",
-      boxShadow:
-        "0 5px 20px rgba(0,0,0,0.08)",
-      marginBottom: "30px",
-    }}
-  >
-    <h2>📅 Attendance History</h2>
+  
 
-    <table
-      style={{
-        width: "100%",
-        marginTop: "20px",
-        borderCollapse: "collapse",
-      }}
-    >
-      <thead>
-        <tr>
-          <th style={thStyle}>Date</th>
-          <th style={thStyle}>Check In</th>
-          <th style={thStyle}>Check Out</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        {myAttendance.map((item) => (
-          <tr key={item.id}>
-            <td style={tdStyle}>{item.date}</td>
-
-            <td style={tdStyle}>
-              {item.checkIn
-                ? item.checkIn
-                    .toDate()
-                    .toLocaleTimeString()
-                : "-"}
-            </td>
-
-            <td style={tdStyle}>
-              {item.checkOut
-                ? item.checkOut
-                    .toDate()
-                    .toLocaleTimeString()
-                : "-"}
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-
-  {/* Timesheets */}
-  <div
-    style={{
-      background: "#fff",
-      padding: "25px",
-      borderRadius: "15px",
-      boxShadow:
-        "0 5px 20px rgba(0,0,0,0.08)",
-    }}
-  >
-    <h2>📋 Timesheet History</h2>
-
-    <table
-      style={{
-        width: "100%",
-        marginTop: "20px",
-        borderCollapse: "collapse",
-      }}
-    >
-      <thead>
-        <tr>
-          <th style={thStyle}>Client</th>
-          <th style={thStyle}>Episode</th>
-          <th style={thStyle}>Task</th>
-          <th style={thStyle}>AI Tool</th>
-          <th style={thStyle}>Hours</th>
-          <th style={thStyle}>Status</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        {myTimesheets.map((item) => (
-          <tr key={item.id}>
-            <td style={tdStyle}>{item.client}</td>
-            <td style={tdStyle}>
-              {item.episodeName}
-            </td>
-            <td style={tdStyle}>{item.task}</td>
-            <td style={tdStyle}>{item.aiTool}</td>
-            <td style={tdStyle}>{item.hours}</td>
-
-            <td style={tdStyle}>
-              <span
-                style={{
-                  background:
-                    item.status ===
-                    "Completed"
-                      ? "#dcfce7"
-                      : "#fef3c7",
-                  color:
-                    item.status ===
-                    "Completed"
-                      ? "#15803d"
-                      : "#d97706",
-                  padding: "6px 12px",
-                  borderRadius: "20px",
-                  fontWeight: "600",
-                }}
-              >
-                {item.status}
-              </span>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
 </div>
 
 );
@@ -497,9 +647,10 @@ const toolStyle = {
 
 const actionCard = {
   background: "#fff",
-  padding: "25px",
-  borderRadius: "15px",
-  boxShadow: "0 5px 20px rgba(0,0,0,.08)",
+  border: `1px solid ${COLORS.soft}`,
+  borderRadius: 18,
+  padding: "22px",
   cursor: "pointer",
-  transition: "0.3s",
+  transition: ".3s",
+  boxShadow: "0 6px 18px rgba(0,0,0,.05)",
 };

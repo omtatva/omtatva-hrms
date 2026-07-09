@@ -19,7 +19,8 @@ export default function AttendancePage() {
 
   const [attendance, setAttendance] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
-
+  
+const [myAttendance, setMyAttendance] = useState([]);
   const [attendanceHistory, setAttendanceHistory] = useState([]);
 
   const [presentDays, setPresentDays] = useState(0);
@@ -383,11 +384,77 @@ return (
       </div>
 
     </div>
+{/* Attendance History */}
+  <div
+    style={{
+      background: "#fff",
+      padding: "25px",
+      borderRadius: "15px",
+      boxShadow:
+        "0 5px 20px rgba(0,0,0,0.08)",
+      marginBottom: "30px",
+    }}
+  >
+    <h2>📅 Attendance History</h2>
 
+    <table
+      style={{
+        width: "100%",
+        marginTop: "20px",
+        borderCollapse: "collapse",
+      }}
+    >
+      <thead>
+        <tr>
+          <th style={thStyle}>Date</th>
+          <th style={thStyle}>Check In</th>
+          <th style={thStyle}>Check Out</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {myAttendance.map((item) => (
+          <tr key={item.id}>
+            <td style={tdStyle}>{item.date}</td>
+
+            <td style={tdStyle}>
+              {item.checkIn
+                ? item.checkIn
+                    .toDate()
+                    .toLocaleTimeString()
+                : "-"}
+            </td>
+
+            <td style={tdStyle}>
+              {item.checkOut
+                ? item.checkOut
+                    .toDate()
+                    .toLocaleTimeString()
+                : "-"}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+ 
   </div>
 );
 }
 
+
+const thStyle = {
+borderBottom: "1px solid #ddd",
+padding: "12px",
+textAlign: "left",
+background: "#f8fafc",
+};
+
+const tdStyle = {
+borderBottom: "1px solid #eee",
+padding: "12px",
+}; 
 const cardStyle = {
   background: "#fff",
   padding: "25px",
