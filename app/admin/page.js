@@ -48,7 +48,10 @@ const isAdminEmail =
   ADMIN_EMAILS.includes(user.email);
 
 const isAdminRole =
-  userData.role === "admin";
+  userData.role === "admin"||
+  userData.role === "head" ||
+  userData.role === "HR";
+ 
 
 if (!isAdminEmail && !isAdminRole) {
   alert("Unauthorized");

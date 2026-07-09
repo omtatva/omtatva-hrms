@@ -20,7 +20,7 @@ const [showLOI, setShowLOI] = useState(false);
 const [showPreview, setShowPreview] = useState(false);
 const [joiningDate, setJoiningDate] = useState("");
 const [designation, setDesignation] = useState("");
-
+const [performanceBand, setPerformanceBand] = useState("");
 const currentDate = new Date().toLocaleDateString("en-IN");
 useEffect(() => {
 loadUser();
@@ -34,6 +34,7 @@ const loadUser = async () => {
 
   if (snap.exists()) {
     setUser(snap.data());
+    setPerformanceBand(data.performance || "");
   }
 
 };
@@ -46,6 +47,22 @@ const saveUser = async () => {
 
   setEditMode(false);
 
+};
+
+const updatePerformanceBand = async () => {
+  try {
+    await updateDoc(doc(db, "users", id), {
+      performance: performanceBand,
+      performanceUpdatedAt: new Date(),
+    });
+
+    alert("Performance Updated");
+
+    loadUser();
+
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 
@@ -229,9 +246,23 @@ boxShadow:"0 10px 30px rgba(0,0,0,.08)"
 </div>
 
 <div style={cardStyle}>
-<h3>Performance</h3>
-<h1>{user.performance || "A+"}</h1>
-<p>Current Rating</p>
+  <h3>⭐ Performance</h3>
+
+  <h1
+    style={{
+      color: "#2563eb",
+      fontSize: "36px",
+      margin: "10px 0",
+    }}
+  >
+    {userData?.performance || "Pending"}
+  </h1>
+
+  <p>
+    {userData?.performanceUpdatedAt
+      ? "Current Rating"
+      : "Awaiting HR Review"}
+  </p>
 </div>
 
 </div>

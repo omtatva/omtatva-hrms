@@ -19,17 +19,20 @@ useEffect(() => {
 
     // Load user profile
     const userRef = doc(db, "users", user.uid);
-    const snap = await getDoc(userRef);
 
-    if (snap.exists()) {
-      const data = snap.data();
+const snap = await getDoc(userRef);
 
-      setUserData(data);
+if (snap.exists()) {
 
-      setUserName(
-        `${data.firstName ?? ""} ${data.lastName ?? ""}`.trim()
-      );
-    }
+    const data = snap.data();
+
+    setUserData(data);
+
+    setUserName(
+        `${data.firstName || ""} ${data.lastName || ""}`.trim()
+    );
+
+}
 
     // Load dashboard data
     await loadMyData(user);
@@ -193,6 +196,16 @@ Welcome Back, {userName || "Employee"} 👋
     <h3>📄 My Documents</h3>
     <p>Payslips & HR Documents</p>
   </div>
+
+  <div style={cardStyle}>
+  <h3>Performance</h3>
+
+  <h1>
+    {userData?.performance || "Pending"}
+  </h1>
+
+  <p>Current Rating</p>
+</div>
 
 </div>
     <div style={cardStyle}>
